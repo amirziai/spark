@@ -104,6 +104,27 @@ final class DataFrameStatFunctions private[sql](df: DataFrame) {
       relativeError).map(_.toArray).toArray
   }
 
+  def median(column: String): Double = {
+    import df.sparkSession.implicits._
+
+    val dfOrdered = df.orderBy(column)
+    val count = df.count()
+    val ds = dfOrdered.select(column).as[Double]
+    val dsWithIndex = ds.rdd.zipWithIndex()
+    if (count % 2 == 0) {
+      val left = dsWithIndex
+        .filter(_._2 == count / 2 - 1)
+        .collect()(0)._1
+      val right = dsWithIndex
+        .filter(_._2 == count / 2)
+        .collect()(0)._1
+      (left + right) / 2
+    } else {
+      dsWithIndex.
+        filter(_._2 == count / 2)
+        .collect()(0)._1
+    }
+  }
 
   /**
    * Python-friendly version of [[approxQuantile()]]

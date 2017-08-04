@@ -139,6 +139,14 @@ class DataFrameStatSuite extends QueryTest with SharedSQLContext {
     assert(math.abs(decimalRes) < 1e-12)
   }
 
+  test("median") {
+    val df1 = spark.createDataset(Seq(1.0, 2.0, 3.0))
+    assert(df1.stat.median("value") == 2.0)
+
+    val df2 = spark.createDataset(Seq(1.0, 2.0, 3.0, 4.0))
+    assert(df2.stat.median("value") == (2.0 + 3.0) / 2)
+  }
+
   test("approximate quantile") {
     val n = 1000
     val df = Seq.tabulate(n)(i => (i, 2.0 * i)).toDF("singles", "doubles")
